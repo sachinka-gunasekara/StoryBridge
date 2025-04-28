@@ -1,8 +1,8 @@
 "use client";
 
 import Link from 'next/link';
-import Image from 'next/image'; // Import Image component
-import backgroundImage from '../public/assets/library_background.jpg'; // Path to your image
+import Image from 'next/image';
+import backgroundImage from '../public/assets/library_background.jpg'; 
 
 export default function HomePage() {
   return (

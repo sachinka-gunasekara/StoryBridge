@@ -99,7 +99,7 @@ export default function LibraryPage() {
               placeholder="Search by title or author..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="border border-s-100 px-4 py-2 rounded-lg w-full pr-10" // <- Add padding-right for the icon
+              className="border border-s-100 px-4 py-2 rounded-lg w-full pr-10"
             />
             {searchTerm && (
               <button

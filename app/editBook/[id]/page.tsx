@@ -3,13 +3,13 @@
 
 import { useState, useEffect } from 'react';
 import { updateBook, getBookById } from '../../../lib/api';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation'; 
 import Link from 'next/link';
 import { ArrowLeft } from 'iconsax-reactjs';
 import React from 'react';
 
 export default function EditBookPage({ params }: { params: { id: string } }) {
-  const bookId = React.use(params).id; // Proper way to unwrap params
+  const bookId = params.id; // Proper way to unwrap params
 
   const [formData, setFormData] = useState({
     title: '',
@@ -21,6 +21,9 @@ export default function EditBookPage({ params }: { params: { id: string } }) {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [redirectNow, setRedirectNow] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Added state for submitting
+
+  const router = useRouter(); // Initialize useRouter
 
   useEffect(() => {
     getBookById(bookId).then(book => {
@@ -57,22 +60,28 @@ export default function EditBookPage({ params }: { params: { id: string } }) {
 
     if (!validate()) return;
 
+    setIsSubmitting(true); // Set submitting state to true
+
     try {
       await updateBook(bookId, { 
         ...formData,
         rating: Number(formData.rating),
       });
 
-      setRedirectNow(true);
+      setRedirectNow(true); // After saving, trigger redirect
     } catch (error) {
       console.error(error);
       alert('Error updating book.');
+    } finally {
+      setIsSubmitting(false); // Set submitting state back to false
     }
   };
 
-  if (redirectNow) {
-    redirect('/library');
-  }
+  useEffect(() => {
+    if (redirectNow) {
+      router.push('/library'); // navigate to /library
+    }
+  }, [redirectNow, router]);
 
   return (
     <div className="max-w-xl mx-auto p-6">
@@ -84,7 +93,7 @@ export default function EditBookPage({ params }: { params: { id: string } }) {
       <form onSubmit={handleSubmit} className="space-y-4 border rounded mx-auto my-auto p-6">
         <h1 className="text-2xl font-bold mb-6 text-s-300">Edit Book ✏️</h1>
 
-        {/* Form fields stay same */}
+        {/* Form fields */}
         {['title', 'category', 'author', 'cover', 'rating'].map((field) => (
           <div key={field}>
             <label className="block font-semibold mb-1 capitalize">{field === 'cover' ? 'Cover Image URL' : field}</label>
@@ -100,23 +109,23 @@ export default function EditBookPage({ params }: { params: { id: string } }) {
           </div>
         ))}
 
-        <div className='flex gap-3'>
-              <Link href="/library" className='w-full'>
-                  <button
-                      type="button"
-                      className="w-full border border-s-100 text-p-text py-2 rounded-lg hover:border-s-200"
-                    >
-                      Cancel
-                    </button>
-              </Link>
-              <button
-                type="submit"
-                className="w-full bg-p-100 text-white py-2 rounded-lg hover:bg-p-200"
-              >
-                Save Changes
+        <div className="flex gap-3">
+          <Link href="/library" className="w-full">
+            <button
+              type="button"
+              className="w-full border border-s-100 text-p-text py-2 rounded-lg hover:border-s-200"
+            >
+              Cancel
             </button>
+          </Link>
+          <button
+            type="submit"
+            className="w-full bg-p-100 text-white py-2 rounded-lg hover:bg-p-200"
+            disabled={isSubmitting} // Disable button when submitting
+          >
+            {isSubmitting ? 'Saving...' : 'Save Changes'} {/* Show loading text */}
+          </button>
         </div>
-
       </form>
     </div>
   );
